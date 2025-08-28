@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": "CJcgMMF4rC",
+      "name": "John",
+      "email": "hello@world",
+      "referralCode": "Hl39BUZ7",
+      "referrals": 0,
+      "createdAt": 1756198562761
+    },
+    {
+      "id": "UcVyzwxuSE",
+      "name": "doe",
+      "email": "hell@world",
+      "referralCode": "740mfboE",
+      "referrals": 0,
+      "createdAt": 1756199704975
+    }
+  ]
+}
