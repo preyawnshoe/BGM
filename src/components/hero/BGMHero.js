@@ -1,0 +1,140 @@
+import React, { useEffect, useState } from "react";
+import tw from "twin.macro";
+import styled from "styled-components";
+import { css } from "styled-components/macro"; //eslint-disable-line
+
+import Header, { NavLink, NavLinks, PrimaryLink as PrimaryLinkBase, LogoLink, NavToggle, DesktopNavLinks } from "../headers/light.js";
+
+const StyledHeader = styled(Header)`
+  ${tw`pt-8 max-w-none w-full`}
+  ${DesktopNavLinks} ${NavLink}, ${LogoLink} {
+    ${tw`text-gray-100 hover:border-gray-300 hover:text-gray-300`}
+  }
+  ${NavToggle}.closed {
+    ${tw`text-gray-100 hover:text-primary-500`}
+  }
+`;
+
+const PrimaryLink = tw(PrimaryLinkBase)`rounded-full`
+const Container = styled.div`
+  ${tw`relative -mx-8 -mt-8 bg-center bg-cover h-screen min-h-144`}
+  background-image: url("https://dutvyzacdrh9k.cloudfront.net/assets/org/185/banners/banner_O8D7qJDq8x6mLK2Mrg8q_BGM_26_Banner.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+`;
+
+const OpacityOverlay = tw.div`z-10 absolute inset-0 bg-black opacity-75`;
+
+const HeroContainer = tw.div`z-20 relative px-6 sm:px-8 mx-auto h-full flex flex-col`;
+const Content = tw.div`px-4 flex flex-1 flex-col justify-center items-center`;
+
+const Heading = styled.h1`
+  ${tw`text-3xl text-center sm:text-4xl lg:text-5xl xl:text-6xl font-black text-gray-100 leading-snug -mt-24 sm:mt-0`}
+  span {
+    ${tw`inline-block mt-2`}
+  }
+`;
+
+const PrimaryAction = tw.a`rounded-full px-8 py-3 mt-10 text-sm sm:text-base sm:mt-16 sm:px-8 sm:py-4 bg-primary-500 text-gray-100 font-bold shadow transition duration-300 hocus:bg-primary-700 hocus:text-gray-200 focus:outline-none focus:shadow-outline`;
+const SecondaryAction = tw.a`rounded-full px-8 py-3 mt-4 text-sm sm:text-base sm:px-8 sm:py-4 bg-gray-100 text-gray-900 font-bold shadow transition duration-300 hocus:bg-gray-200 focus:outline-none focus:shadow-outline`;
+const LoginButton = tw.a`px-8 py-3 rounded bg-gray-100 text-gray-900 font-bold shadow transition duration-300 hocus:bg-gray-200 focus:outline-none focus:shadow-outline border-b-0`;
+const Inline = tw.div`mt-6 w-full max-w-xl flex flex-col items-center`;
+const RefInput = tw.input`w-full px-4 py-2 border rounded`;
+const Small = tw.p`mt-2 text-gray-200 text-sm`;
+const ShareRow = tw.div`mt-4 flex gap-3 flex-wrap justify-center`;
+const ShareButton = tw.a`rounded-full px-5 py-2 text-sm bg-gray-100 text-gray-900 font-semibold shadow transition duration-300 hocus:bg-gray-200 focus:outline-none focus:shadow-outline`;
+
+export default function BGMHero() {
+  const [user, setUser] = useState(null);
+  const [referralUrl, setReferralUrl] = useState("");
+  const [landingShareUrl, setLandingShareUrl] = useState("");
+  const [refParam, setRefParam] = useState("");
+  const [referralSignupUrl, setReferralSignupUrl] = useState("");
+  const [shareLinks, setShareLinks] = useState({ whatsapp: "", twitter: "" });
+
+  useEffect(() => {
+    const origin = window.location.origin;
+    const params = new URLSearchParams(window.location.search);
+    const refFromUrl = params.get('ref') || "";
+    setRefParam(refFromUrl);
+
+    const u = localStorage.getItem('user');
+    if (u) {
+      const parsed = JSON.parse(u);
+      setUser(parsed);
+      setReferralUrl(`${origin}/signup?ref=${parsed.referralCode}`);
+      setReferralSignupUrl(`/signup?ref=${parsed.referralCode}`);
+      setLandingShareUrl(`${origin}/?ref=${parsed.referralCode}`);
+
+      const displayName = parsed.name || "me";
+      const personalized = `Join ${displayName} at BGM 2026 Hyderabad! Register on Tikkl and use my referral link to sign up:`;
+      const wa = `https://wa.me/?text=${encodeURIComponent(personalized + " " + `${origin}/signup?ref=${parsed.referralCode}`)}`;
+      const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(personalized)}&url=${encodeURIComponent(`${origin}/signup?ref=${parsed.referralCode}`)}&hashtags=BGM2026,BITSAA`;
+      setShareLinks({ whatsapp: wa, twitter: tw });
+    } else if (refFromUrl) {
+      setReferralUrl(`${origin}/signup?ref=${refFromUrl}`);
+      setReferralSignupUrl(`/signup?ref=${refFromUrl}`);
+      setLandingShareUrl(`${origin}/?ref=${refFromUrl}`);
+
+      const personalized = `Join me at BGM 2026 Hyderabad! Register on Tikkl using this referral link:`;
+      const wa = `https://wa.me/?text=${encodeURIComponent(personalized + " " + `${origin}/signup?ref=${refFromUrl}`)}`;
+      const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(personalized)}&url=${encodeURIComponent(`${origin}/signup?ref=${refFromUrl}`)}&hashtags=BGM2026,BITSAA`;
+      setShareLinks({ whatsapp: wa, twitter: tw });
+    }
+  }, []);
+
+  const onLogout = (e) => {
+    e.preventDefault();
+    localStorage.removeItem('user');
+    window.location.href = '/';
+  };
+
+  const navLinks = [
+    user ? (
+      <NavLinks key={1}>
+        <PrimaryLink href="#" onClick={onLogout}>Logout</PrimaryLink>
+      </NavLinks>
+    ) : (
+      <NavLinks key={2}>
+        <LoginButton href="/login">Login</LoginButton>
+      </NavLinks>
+    )
+  ];
+
+  return (
+    <Container>
+      <OpacityOverlay />
+      <HeroContainer>
+        <StyledHeader links={navLinks} />
+        <Content>
+          <Heading>
+            <span>BITSAA Global Meet</span>
+            <br />
+            <span>Hyderabad 2026</span>
+          </Heading>
+          {user ? (
+            <>
+              <PrimaryAction href="https://tikkl.com/bgm/c/bgm26-hyd" target="_blank" rel="noreferrer">Get tickets on Tikkl</PrimaryAction>
+              <Inline>
+                <RefInput readOnly value={referralUrl} onFocus={e => e.target.select()} />
+                <Small>Share this referral link: it will redirect users to signup with your referral code</Small>
+                <ShareRow>
+                  <ShareButton href={shareLinks.whatsapp} target="_blank" rel="noreferrer">Share on WhatsApp</ShareButton>
+                  <ShareButton href={shareLinks.twitter} target="_blank" rel="noreferrer">Share on Twitter</ShareButton>
+                </ShareRow>
+              </Inline>
+            </>
+          ) : (
+            <>
+              <PrimaryAction href="/signup">Register to Get Referral Link</PrimaryAction>
+              <SecondaryAction href="https://tikkl.com/bgm/c/bgm26-hyd" target="_blank" rel="noreferrer">Get tickets on Tikkl</SecondaryAction>
+            </>
+          )}
+        </Content>
+      </HeroContainer>
+    </Container>
+  );
+}
+
+
