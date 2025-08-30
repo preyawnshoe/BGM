@@ -6,6 +6,8 @@ const User = require('./models/User');
 const authRoutes = require('./routes/auth');
 const referralRoutes = require('./routes/referral');
 const leaderboardRoutes = require('./routes/leaderboard');
+const ticketRoutes = require('./routes/ticket');
+const ticketUserRoutes = require('./routes/ticket_user');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -36,6 +38,8 @@ const TIKKL_EVENT_URL = 'https://tikkl.com/bgm/c/bgm26-hyd';
 app.use('/api', authRoutes);
 app.use('/api/ref', referralRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/ticket', ticketRoutes);
+app.use('/api/ticket', ticketUserRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);

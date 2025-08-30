@@ -40,7 +40,9 @@ const PrimaryAction = tw.a`rounded-full px-8 py-3 mt-10 text-sm sm:text-base sm:
 const SecondaryAction = tw.a`rounded-full px-8 py-3 mt-4 text-sm sm:text-base sm:px-8 sm:py-4 bg-gray-100 text-gray-900 font-bold shadow transition duration-300 hocus:bg-gray-200 focus:outline-none focus:shadow-outline`;
 const LoginButton = tw.a`px-8 py-3 rounded bg-gray-100 text-gray-900 font-bold shadow transition duration-300 hocus:bg-gray-200 focus:outline-none focus:shadow-outline border-b-0`;
 const Inline = tw.div`mt-6 w-full max-w-xl flex flex-col items-center`;
-const RefInput = tw.input`w-full px-4 py-2 border rounded`;
+const RefRow = tw.div`w-full flex items-center gap-2`;
+const RefInput = tw.input`flex-1 px-4 py-2 border rounded`;
+const CopyButton = tw.button`ml-2 px-4 py-2 bg-primary-500 text-gray-100 rounded font-semibold shadow transition duration-300 hocus:bg-primary-700 focus:outline-none focus:shadow-outline`;
 const Small = tw.p`mt-2 text-gray-200 text-sm`;
 const ShareRow = tw.div`mt-4 flex gap-3 flex-wrap justify-center`;
 const ShareButton = tw.a`rounded-full px-5 py-2 text-sm bg-gray-100 text-gray-900 font-semibold shadow transition duration-300 hocus:bg-gray-200 focus:outline-none focus:shadow-outline`;
@@ -52,6 +54,49 @@ export default function BGMHero() {
   const [refParam, setRefParam] = useState("");
   const [referralSignupUrl, setReferralSignupUrl] = useState("");
   const [shareLinks, setShareLinks] = useState({ whatsapp: "", twitter: "" });
+  const [copied, setCopied] = useState(false);
+  const [ticketId, setTicketId] = useState("");
+  const [ticketSubmitted, setTicketSubmitted] = useState(false);
+  const [ticketError, setTicketError] = useState("");
+  const [checkingTicket, setCheckingTicket] = useState(true);
+
+  const handleCopy = () => {
+    if (referralUrl) {
+      navigator.clipboard.writeText(referralUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
+  const handleTicketSubmit = async (e) => {
+    e.preventDefault();
+    if (!ticketId.trim()) {
+      setTicketError("Please enter your Ticket ID.");
+      return;
+    }
+    if (!user || !user._id) {
+      setTicketError("User not found. Please login again.");
+      return;
+    }
+    setTicketError("");
+    try {
+      // If the user was referred, pass the referral code for backend to increment referrer's count
+      const referralCode = refParam || undefined;
+      const res = await fetch('/api/ticket/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticketId: ticketId.trim(), userId: user._id, referralCode })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setTicketError(data.error || 'Ticket verification failed');
+        return;
+      }
+      setTicketSubmitted(true);
+    } catch (err) {
+      setTicketError('Network error. Please try again.');
+    }
+  };
 
   useEffect(() => {
     const origin = window.location.origin;
@@ -63,6 +108,20 @@ export default function BGMHero() {
     if (u) {
       const parsed = JSON.parse(u);
       setUser(parsed);
+      // Check if user has a verified ticket
+      setCheckingTicket(true);
+      fetch(`/api/ticket/user/${parsed._id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.hasTicket) {
+            setTicketSubmitted(true);
+          } else {
+            setTicketSubmitted(false);
+          }
+        })
+        .catch(() => setTicketSubmitted(false))
+        .finally(() => setCheckingTicket(false));
+
       setReferralUrl(`${origin}/signup?ref=${parsed.referralCode}`);
       setReferralSignupUrl(`/signup?ref=${parsed.referralCode}`);
       setLandingShareUrl(`${origin}/?ref=${parsed.referralCode}`);
@@ -116,19 +175,41 @@ export default function BGMHero() {
           {user ? (
             <>
               <PrimaryAction href="https://tikkl.com/bgm/c/bgm26-hyd" target="_blank" rel="noreferrer">Get tickets on Tikkl</PrimaryAction>
-              <Inline>
-                <RefInput readOnly value={referralUrl} onFocus={e => e.target.select()} />
-                <Small>Share this referral link: it will redirect users to signup with your referral code</Small>
-                <ShareRow>
-                  <ShareButton href={shareLinks.whatsapp} target="_blank" rel="noreferrer">Share on WhatsApp</ShareButton>
-                  <ShareButton href={shareLinks.twitter} target="_blank" rel="noreferrer">Share on Twitter</ShareButton>
-                </ShareRow>
-              </Inline>
+              {checkingTicket ? (
+                <Small>Checking ticket status...</Small>
+              ) : !ticketSubmitted ? (
+                <Inline>
+                  <form onSubmit={handleTicketSubmit} style={{ width: "100%" }}>
+                    <RefRow>
+                      <RefInput
+                        type="text"
+                        placeholder="Enter your Ticket ID to join referral programme"
+                        value={ticketId}
+                        onChange={e => setTicketId(e.target.value)}
+                      />
+                      <CopyButton as="button" type="submit">Join</CopyButton>
+                    </RefRow>
+                    {ticketError && <Small style={{ color: '#f87171' }}>{ticketError}</Small>}
+                  </form>
+                </Inline>
+              ) : (
+                <Inline>
+                  <RefRow>
+                    <RefInput readOnly value={referralUrl} onFocus={e => e.target.select()} />
+                    <CopyButton onClick={handleCopy}>{copied ? "Copied!" : "Copy"}</CopyButton>
+                  </RefRow>
+                  <Small>Share this referral link: it will redirect users to signup with your referral code</Small>
+                  <ShareRow>
+                    <ShareButton href={shareLinks.whatsapp} target="_blank" rel="noreferrer">Share on WhatsApp</ShareButton>
+                    <ShareButton href={shareLinks.twitter} target="_blank" rel="noreferrer">Share on Twitter</ShareButton>
+                  </ShareRow>
+                </Inline>
+              )}
             </>
           ) : (
             <>
               <PrimaryAction href="/signup">Register to Get Referral Link</PrimaryAction>
-              <SecondaryAction href="https://tikkl.com/bgm/c/bgm26-hyd" target="_blank" rel="noreferrer">Get tickets on Tikkl</SecondaryAction>
+              <SecondaryAction href="https://tikkl.com/bgm/c/bgm26-hyd" target="_blank" rel="noreferrer">Skip and Get tickets on Tikkl</SecondaryAction>
             </>
           )}
         </Content>

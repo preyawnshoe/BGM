@@ -21,9 +21,8 @@ router.post('/success', async (req, res) => {
   const owner = await User.findOne({ pendingTokens: token });
   if (!owner) return res.status(404).json({ error: 'Invalid token' });
   owner.pendingTokens = owner.pendingTokens.filter(t => t !== token);
-  owner.referrals = (owner.referrals || 0) + 1;
   await owner.save();
-  res.json({ ok: true, referrals: owner.referrals || 0 });
+  res.json({ ok: true });
 });
 
 module.exports = router;
