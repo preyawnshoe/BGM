@@ -8,23 +8,15 @@ router.post('/register', async (req, res) => {
     if (!name || !email) return res.status(400).json({ error: 'name and email are required' });
     const exists = await User.findOne({ email: email.toLowerCase() }).lean();
     if (exists) return res.status(409).json({ error: 'Email already registered' });
-    
+
     const newReferralCode = generateId(8);
-    const user = await User.create({ 
-      name, 
-      email: email.toLowerCase(), 
-      referralCode: newReferralCode 
+    const user = await User.create({
+      name,
+      email: email.toLowerCase(),
+      referralCode: newReferralCode,
+      referredBy: referralCode || null
     });
-    
-    // If user was referred, increment referrer's count
-    if (referralCode) {
-      const referrer = await User.findOne({ referralCode });
-      if (referrer) {
-        referrer.referrals += 1;
-        await referrer.save();
-      }
-    }
-    
+    // Do NOT increment referrer count here. Only increment on ticket verification.
     res.json({ user });
   } catch (e) {
     if (e.code === 11000) return res.status(409).json({ error: 'Duplicate key' });

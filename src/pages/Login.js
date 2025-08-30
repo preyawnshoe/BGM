@@ -63,11 +63,6 @@ export default ({
       iconImageSrc: googleIconImageSrc,
       text: "Sign In With Google",
       url: "https://google.com"
-    },
-    {
-      iconImageSrc: twitterIconImageSrc,
-      text: "Sign In With Twitter",
-      url: "https://twitter.com"
     }
   ],
   submitButtonText = "Sign In",
