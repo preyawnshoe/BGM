@@ -1,4 +1,13 @@
+
 const router = require('express').Router();
+
+// GET /api/ticket/user/:userId - check if user has a verified ticket
+router.get('/user/:userId', async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) return res.status(400).json({ error: 'userId required' });
+  const ticket = await Ticket.findOne({ user: userId, used: true });
+  res.json({ hasTicket: !!ticket });
+});
 
 const User = require('../models/User');
 const Ticket = require('../models/Ticket');

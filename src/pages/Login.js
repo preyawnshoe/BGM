@@ -54,32 +54,30 @@ const IllustrationImage = styled.div`
   ${tw`m-12 xl:m-16 w-full max-w-sm bg-contain bg-center bg-no-repeat`}
 `;
 
-export default ({
-  logoLinkUrl = "/",
-  illustrationImageSrc = illustration,
-  headingText = "Sign In",
-  socialButtons = [
-    {
-      iconImageSrc: googleIconImageSrc,
-      text: "Sign In With Google",
-      url: "https://google.com"
-    }
-  ],
-  submitButtonText = "Sign In",
-  SubmitButtonIcon = LoginIcon,
-  forgotPasswordUrl = "#",
-  signupUrl = "/signup",
-
-}) => {
+export default function Login(props) {
+  const isDev = window.location.hostname === "localhost";
+  const googleAuthUrl = isDev
+    ? "http://localhost:5000/api/auth/google"
+    : "/api/auth/google";
+  const {
+    logoLinkUrl = "/",
+    illustrationImageSrc = illustration,
+    headingText = "Sign In",
+    socialButtons = [],
+    submitButtonText = "Sign In",
+    SubmitButtonIcon = LoginIcon,
+    forgotPasswordUrl = "#",
+    signupUrl = "/signup"
+  } = props || {};
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  const onSubmit = async (e) => {
+  const onSubmit = async e => {
     e.preventDefault();
     setMessage("");
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -87,7 +85,7 @@ export default ({
       const raw = await res.text();
       let data = {};
       try { data = raw ? JSON.parse(raw) : {}; } catch (_) { /* non-JSON proxy error */ }
-      if (!res.ok) throw new Error(data.error || raw || 'Login failed');
+      if (!res.ok) throw new Error(data.error || raw || 'Failed to login');
       localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/');
     } catch (err) {
@@ -96,55 +94,54 @@ export default ({
   };
 
   return (
-  <AnimationRevealPage>
-    <Container>
-      <Content>
-        <MainContainer>
-          <LogoLink href={logoLinkUrl}>
-            <LogoImage src={logo} />
-          </LogoLink>
-          <MainContent>
-            <Heading>{headingText}</Heading>
-            <FormContainer>
-              <SocialButtonsContainer>
-                {socialButtons.map((socialButton, index) => (
-                  <SocialButton key={index} href={socialButton.url}>
+    <AnimationRevealPage>
+      <Container>
+        <Content>
+          <MainContainer>
+            <LogoLink href={logoLinkUrl}>
+              <LogoImage src={logo} />
+            </LogoLink>
+            <MainContent>
+              <Heading>{headingText}</Heading>
+              <FormContainer>
+                <SocialButtonsContainer>
+                  <SocialButton href={googleAuthUrl}>
                     <span className="iconContainer">
-                      <img src={socialButton.iconImageSrc} className="icon" alt=""/>
+                      <img src={googleIconImageSrc} className="icon" alt="Google" />
                     </span>
-                    <span className="text">{socialButton.text}</span>
+                    <span className="text">Sign in with Google</span>
                   </SocialButton>
-                ))}
-              </SocialButtonsContainer>
-              <DividerTextContainer>
-                <DividerText>Or Sign in with your e-mail</DividerText>
-              </DividerTextContainer>
-              <Form onSubmit={onSubmit}>
-                <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-                <SubmitButton type="submit">
-                  <SubmitButtonIcon className="icon" />
-                  <span className="text">{submitButtonText}</span>
-                </SubmitButton>
-                {message && <p tw="mt-4 text-center text-sm text-gray-600">{message}</p>}
-              </Form>
-              <p tw="mt-6 text-xs text-gray-600 text-center">
-                <a href={forgotPasswordUrl} tw="border-b border-gray-500 border-dotted">
-                  Forgot Password ?
-                </a>
-              </p>
-              <p tw="mt-8 text-sm text-gray-600 text-center">
-                Dont have an account?{" "}
-                <a href={signupUrl} tw="border-b border-gray-500 border-dotted">
-                  Sign Up
-                </a>
-              </p>
-            </FormContainer>
-          </MainContent>
-        </MainContainer>
-        <IllustrationContainer>
-          <IllustrationImage imageSrc={illustrationImageSrc} />
-        </IllustrationContainer>
-      </Content>
-    </Container>
-  </AnimationRevealPage>
-)}
+                </SocialButtonsContainer>
+                <DividerTextContainer>
+                  <DividerText>Or Sign in with your e-mail</DividerText>
+                </DividerTextContainer>
+                <Form onSubmit={onSubmit}>
+                  <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <SubmitButton type="submit">
+                    <SubmitButtonIcon className="icon" />
+                    <span className="text">{submitButtonText}</span>
+                  </SubmitButton>
+                  {message && <p tw="mt-4 text-center text-sm text-gray-600">{message}</p>}
+                </Form>
+                <p tw="mt-6 text-xs text-gray-600 text-center">
+                  <a href={forgotPasswordUrl} tw="border-b border-gray-500 border-dotted">
+                    Forgot Password ?
+                  </a>
+                </p>
+                <p tw="mt-8 text-sm text-gray-600 text-center">
+                  Dont have an account?{" "}
+                  <a href={signupUrl} tw="border-b border-gray-500 border-dotted">
+                    Sign Up
+                  </a>
+                </p>
+              </FormContainer>
+            </MainContent>
+          </MainContainer>
+          <IllustrationContainer>
+            <IllustrationImage imageSrc={illustrationImageSrc} />
+          </IllustrationContainer>
+        </Content>
+      </Container>
+    </AnimationRevealPage>
+  );
+}

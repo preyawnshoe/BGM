@@ -82,9 +82,11 @@ export default function Dashboard() {
 
             <Card>
               <Title>Your Referral Link</Title>
-              <Input readOnly value={referralUrl} />
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <Input readOnly value={referralUrl} style={{ flex: 1 }} />
+                <Button onClick={copy} style={{ whiteSpace: 'nowrap' }}>Copy Link</Button>
+              </div>
               <div>
-                <Button onClick={copy}>Copy Link</Button>
                 <LinkBtn href={`/api/ref/${user.referralCode}`} target="_blank" rel="noreferrer">Register on Tikkl (with referral)</LinkBtn>
               </div>
               <Para tw="mt-4">Or register directly: <a href="https://tikkl.com/bgm/c/bgm26-hyd" target="_blank" rel="noreferrer">Event Page</a></Para>
