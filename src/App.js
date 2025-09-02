@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import GlobalStyles from 'styles/GlobalStyles';
 import { css } from "styled-components/macro"; //eslint-disable-line
 
@@ -100,8 +100,8 @@ import { css } from "styled-components/macro"; //eslint-disable-line
 // import TermsOfServicePage from "pages/TermsOfService.js";
 // import PrivacyPolicyPage from "pages/PrivacyPolicy.js";
 
+
 import ComponentRenderer from "ComponentRenderer.js";
-import MainLandingPage from "MainLandingPage.js";
 import BGMLandingPage from "pages/BGMLandingPage.js";
 import ThankYouPage from "ThankYouPage.js";
 import LoginPage from "pages/Login.js";
@@ -110,10 +110,27 @@ import Dashboard from "pages/Dashboard.js";
 import Leaderboard from "pages/Leaderboard.js";
 import ReferralSuccess from "pages/ReferralSuccess.js";
 import PostLoginLanding from "pages/PostLoginLanding.js";
-
+import AdminPanel from "pages/AdminPanel.js";
+import AdminLogin from "pages/AdminLogin.js";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
+// Utility to extract token from URL, store in localStorage, and redirect
+function handleGoogleJwtRedirect() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (token) {
+    localStorage.setItem('jwt', token);
+    // Optionally decode user info from JWT (if needed)
+    // Redirect to main landing page
+    window.history.replaceState({}, document.title, window.location.pathname); // Clean URL
+    window.location.replace('/');
+  }
+}
+
 export default function App() {
+  useEffect(() => {
+    handleGoogleJwtRedirect();
+  }, []);
   // If you want to disable the animation just use the disabled `prop` like below on your page's component
   // return <AnimationRevealPage disabled>xxxxxxxxxx</AnimationRevealPage>;
 
@@ -132,6 +149,8 @@ export default function App() {
           <Route path="/home" element={<PostLoginLanding />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/ref-success" element={<ReferralSuccess />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/" element={<BGMLandingPage />} />
         </Routes>
       </Router>

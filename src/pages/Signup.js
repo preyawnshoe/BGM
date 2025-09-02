@@ -57,13 +57,6 @@ export default ({
   logoLinkUrl = "/",
   illustrationImageSrc = illustration,
   headingText = "Register for BGM Referral",
-  socialButtons = [
-    {
-      iconImageSrc: googleIconImageSrc,
-      text: "Sign Up With Google",
-      url: "https://google.com"
-    }
-  ],
   submitButtonText = "Register",
   SubmitButtonIcon = SignUpIcon,
   tosUrl = "#",
@@ -77,6 +70,8 @@ export default ({
   const [referrerName, setReferrerName] = useState("");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isDev = window.location.hostname === "localhost";
+  const googleAuthUrl = isDev ? "http://localhost:5000/api/auth/google" : "/api/auth/google";
 
   useEffect(() => {
     const refParam = searchParams.get('ref');
@@ -98,7 +93,7 @@ export default ({
     e.preventDefault();
     setMessage("");
     try {
-      const res = await fetch('/api/register', {
+  const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, referralCode })
@@ -134,18 +129,14 @@ export default ({
               </p>
             )}
             <FormContainer>
-              {socialButtons.length > 0 && (
-                <SocialButtonsContainer>
-                  {socialButtons.map((socialButton, index) => (
-                    <SocialButton key={index} href={socialButton.url}>
-                      <span className="iconContainer">
-                        <img className="icon" src={socialButton.iconImageSrc} alt={socialButton.text} />
-                      </span>
-                      <span className="text">{socialButton.text}</span>
-                    </SocialButton>
-                  ))}
-                </SocialButtonsContainer>
-              )}
+              <SocialButtonsContainer>
+                <SocialButton href={googleAuthUrl}>
+                  <span className="iconContainer">
+                    <img className="icon" src={googleIconImageSrc} alt="Sign Up With Google" />
+                  </span>
+                  <span className="text">Sign Up With Google</span>
+                </SocialButton>
+              </SocialButtonsContainer>
               <DividerTextContainer>
                 <DividerText>Or Sign up with your e-mail</DividerText>
               </DividerTextContainer>
