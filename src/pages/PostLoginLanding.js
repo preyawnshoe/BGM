@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import jwt_decode from "../helpers/jwt_decode";
 import AnimationRevealPage from "helpers/AnimationRevealPage";
 import tw from "twin.macro";
 
@@ -15,9 +16,27 @@ export default function PostLoginLanding() {
   const [referralUrl, setReferralUrl] = useState("");
 
   useEffect(() => {
+    // Try to get user from localStorage (email signup)
+    let parsed = null;
     const u = localStorage.getItem('user');
     if (u) {
-      const parsed = JSON.parse(u);
+      try { parsed = JSON.parse(u); } catch { parsed = null; }
+    }
+    // If not found, try to decode JWT (Google login)
+    if (!parsed) {
+      const token = localStorage.getItem('jwt');
+      if (token) {
+        try {
+          const decoded = jwt_decode(token);
+          parsed = {
+            name: decoded.name,
+            email: decoded.email,
+            referralCode: decoded.referralCode
+          };
+        } catch {}
+      }
+    }
+    if (parsed) {
       setUser(parsed);
       const origin = window.location.origin;
       setReferralUrl(`${origin}/api/ref/${parsed.referralCode}`);
