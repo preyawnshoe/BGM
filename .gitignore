@@ -26,6 +26,6 @@ backend/.env
 
 # Misc
 coverage/
-
+.cache/
 # Optional: ignore public env files
 public/.env
