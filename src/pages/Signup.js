@@ -65,44 +65,60 @@ export default ({
 }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [referrerName, setReferrerName] = useState("");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isDev = window.location.hostname === "localhost";
-  const googleAuthUrl = isDev ? "http://localhost:5000/api/auth/google" : "/api/auth/google";
+  const googleAuthUrl = "/api/auth/google";
 
   useEffect(() => {
     const refParam = searchParams.get('ref');
     if (refParam) {
       setReferralCode(refParam);
       // Fetch referrer information to show who referred them
-      fetch(`/api/user/${refParam}`)
+      fetch(`/api/auth/user/${refParam}`)
         .then(res => res.json())
         .then(data => {
           if (data.user) {
             setReferrerName(data.user.name);
           }
         })
-        .catch(err => console.log('Could not fetch referrer info'));
+        .catch(() => {});
     }
   }, [searchParams]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
+
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setMessage("Password must be at least 6 characters long");
+      return;
+    }
+
     try {
-  const res = await fetch('/api/auth/register', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, referralCode })
+        body: JSON.stringify({ name, email, password, referralCode })
       });
       const raw = await res.text();
       let data = {};
       try { data = raw ? JSON.parse(raw) : {}; } catch (_) { /* non-JSON proxy error */ }
       if (!res.ok) throw new Error(data.error || raw || 'Failed to register');
+
+      // Store both user data and JWT token
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('jwt', data.token);
+
       navigate('/');
     } catch (err) {
       setMessage(err.message);
@@ -143,6 +159,8 @@ export default ({
               <Form onSubmit={onSubmit}>
                 <Input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} required />
                 <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+                <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+                <Input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
                 <SubmitButton type="submit">
                   <SubmitButtonIcon className="icon" />
                   <span className="text">{submitButtonText}</span>

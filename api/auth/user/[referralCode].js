@@ -1,5 +1,5 @@
-const { connectToDatabase } = require('../../../_lib/db');
-const User = require('../../../../backend/models/User');
+const { connectToDatabase } = require('../../_lib/db');
+const User = require('../../_lib/User');
 
 module.exports = async (req, res) => {
 	if (req.method !== 'GET') {
@@ -12,6 +12,7 @@ module.exports = async (req, res) => {
 		if (!user) return res.status(404).json({ error: 'Referral code not found' });
 		return res.status(200).json({ user });
 	} catch (e) {
+		console.error('User referral code error:', e);
 		return res.status(500).json({ error: 'Server error' });
 	}
 };

@@ -55,10 +55,7 @@ const IllustrationImage = styled.div`
 `;
 
 export default function Login(props) {
-  const isDev = window.location.hostname === "localhost";
-  const googleAuthUrl = isDev
-    ? "http://localhost:5000/api/auth/google"
-    : "/api/auth/google";
+  const googleAuthUrl = "/api/auth/google";
   const {
     logoLinkUrl = "/",
     illustrationImageSrc = illustration,
@@ -70,6 +67,7 @@ export default function Login(props) {
     signupUrl = "/signup"
   } = props || {};
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
@@ -80,13 +78,17 @@ export default function Login(props) {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, password })
       });
       const raw = await res.text();
       let data = {};
       try { data = raw ? JSON.parse(raw) : {}; } catch (_) { /* non-JSON proxy error */ }
       if (!res.ok) throw new Error(data.error || raw || 'Failed to login');
+
+      // Store both user data and JWT token
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('jwt', data.token);
+
       navigate('/');
     } catch (err) {
       setMessage(err.message);
@@ -117,6 +119,7 @@ export default function Login(props) {
                 </DividerTextContainer>
                 <Form onSubmit={onSubmit}>
                   <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
                   <SubmitButton type="submit">
                     <SubmitButtonIcon className="icon" />
                     <span className="text">{submitButtonText}</span>
