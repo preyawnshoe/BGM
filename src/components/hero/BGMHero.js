@@ -96,7 +96,69 @@ export default function BGMHero() {
     const origin = window.location.origin;
     const params = new URLSearchParams(window.location.search);
     const refFromUrl = params.get('ref') || "";
+    const tokenFromUrl = params.get('token');
+    const oauthFromUrl = params.get('oauth');
     setRefParam(refFromUrl);
+
+    // Handle OAuth callback
+    if (tokenFromUrl && oauthFromUrl === 'google') {
+      console.log('Processing OAuth callback...');
+      // Store the token and fetch user data
+      localStorage.setItem('jwt', tokenFromUrl);
+
+      // Fetch user data using the token
+      fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${tokenFromUrl}`
+        }
+      })
+      .then(res => res.json())
+      .then(userData => {
+        if (userData.user) {
+          localStorage.setItem('user', JSON.stringify(userData.user));
+          setUser(userData.user);
+          console.log('OAuth user data stored:', userData.user);
+
+          // Check if user has a verified ticket
+          setCheckingTicket(true);
+          fetch(`/api/ticket/user/${userData.user._id}`)
+            .then(res => {
+              console.log('API Response status:', res.status);
+              return res.json();
+            })
+            .then(data => {
+              console.log('API Response data:', data);
+              if (data.hasTicket) {
+                setTicketSubmitted(true);
+              } else {
+                setTicketSubmitted(false);
+              }
+            })
+            .catch(err => {
+              console.error('Error checking ticket:', err);
+              setTicketSubmitted(false);
+            })
+            .finally(() => setCheckingTicket(false));
+
+          setReferralUrl(`${origin}/signup?ref=${userData.user.referralCode}`);
+
+          const displayName = userData.user.name || "me";
+          const personalized = `Join ${displayName} at BGM 2026 Hyderabad! Register on Tikkl and use my referral link to sign up:`;
+          const wa = `https://wa.me/?text=${encodeURIComponent(`${personalized} ${origin}/signup?ref=${userData.user.referralCode}`)}`;
+          const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(personalized)}&url=${encodeURIComponent(`${origin}/signup?ref=${userData.user.referralCode}`)}&hashtags=BGM2026,BITSAA`;
+          setShareLinks({ whatsapp: wa, twitter: tw });
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching OAuth user data:', err);
+      })
+      .finally(() => {
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      });
+
+      return; // Exit early, don't process normal user check
+    }
 
     const u = localStorage.getItem('user');
     if (u) {
