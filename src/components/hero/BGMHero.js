@@ -65,7 +65,9 @@ export default function BGMHero() {
   const [copied, setCopied] = useState(false);
   const [ticketId, setTicketId] = useState("");
   const [ticketSubmitted, setTicketSubmitted] = useState(false);
+  const [ticketError, setTicketError] = useState("");
   const [ticketSuccess, setTicketSuccess] = useState("");
+  const [checkingTicket, setCheckingTicket] = useState(true);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   // Countdown logic
