@@ -39,12 +39,14 @@
   "proxy": "http://localhost:3001",
   "scripts": {
     "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider PORT=3000 react-scripts start",
-    "serverless": "vercel dev --listen 3001",
+    "serverless": "node dev-server.js",
+    "serverless:vercel": "vercel dev --listen 3001",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts test",
     "server": "node backend/index.js",
     "server:dev": "nodemon --watch backend --ext js,json --exec node backend/index.js",
     "dev": "concurrently \"npm run start\" \"npm run serverless\"",
+    "dev:vercel": "concurrently \"npm run start\" \"npm run serverless:vercel\"",
     "eject": "react-scripts eject",
     "deploy": "yarn build && netlify deploy --prod --dir=build"
   },
