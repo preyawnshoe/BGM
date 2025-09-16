@@ -105,15 +105,22 @@ export default function BGMHero() {
       // Check if user has a verified ticket
       setCheckingTicket(true);
       fetch(`/api/ticket/user/${parsed._id}`)
-        .then(res => res.json())
+        .then(res => {
+          console.log('API Response status:', res.status);
+          return res.json();
+        })
         .then(data => {
+          console.log('API Response data:', data);
           if (data.hasTicket) {
             setTicketSubmitted(true);
           } else {
             setTicketSubmitted(false);
           }
         })
-        .catch(() => setTicketSubmitted(false))
+        .catch(err => {
+          console.error('Error checking ticket:', err);
+          setTicketSubmitted(false);
+        })
         .finally(() => setCheckingTicket(false));
 
       setReferralUrl(`${origin}/signup?ref=${parsed.referralCode}`);

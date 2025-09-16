@@ -29,3 +29,5 @@ coverage/
 .cache/
 # Optional: ignore public env files
 public/.env
+.vercel
+.env*.local

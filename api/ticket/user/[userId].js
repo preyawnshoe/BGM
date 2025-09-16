@@ -9,7 +9,8 @@ module.exports = async (req, res) => {
   try {
     await connectToDatabase();
 
-    const { userId } = req.query;
+    // In Vercel dynamic routes, the parameter is available in req.query
+    const userId = req.query.userId;
 
     if (!userId) {
       return res.status(400).json({ error: 'userId required' });
