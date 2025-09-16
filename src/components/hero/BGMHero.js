@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCurrentUser } from "./auth";
+// import { getCurrentUser } from "./auth";
 import tw from "twin.macro";
 import styled from "styled-components";
 import { css } from "styled-components/macro"; //eslint-disable-line
@@ -237,7 +237,7 @@ export default function BGMHero() {
         setTicketError(data.error || 'Ticket verification failed');
         return;
       }
-      const data = await res.json();
+      await res.json(); // Response processed but not used for now
       setTicketSubmitted(true);
       setTicketSuccess("Ticket verified successfully! Your referral link is now active.");
       setTicketId(""); // Clear the input

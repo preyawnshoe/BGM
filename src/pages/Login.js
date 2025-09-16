@@ -8,7 +8,7 @@ import {css} from "styled-components/macro"; //eslint-disable-line
 import illustration from "images/login-illustration.svg";
 import logo from "images/logo.svg";
 import googleIconImageSrc from "images/google-icon.png";
-import twitterIconImageSrc from "images/twitter-icon.png";
+// import twitterIconImageSrc from "images/twitter-icon.png";
 import { ReactComponent as LoginIcon } from "feather-icons/dist/icons/log-in.svg";
 
 const Container = tw(ContainerBase)`min-h-screen bg-primary-900 text-white font-medium flex justify-center -m-8`;
@@ -60,7 +60,7 @@ export default function Login(props) {
     logoLinkUrl = "/",
     illustrationImageSrc = illustration,
     headingText = "Sign In",
-    socialButtons = [],
+    // socialButtons = [], // Available for future use
     submitButtonText = "Sign In",
     SubmitButtonIcon = LoginIcon,
     forgotPasswordUrl = "#",

@@ -1,5 +1,5 @@
 import React from "react";
-import { getCurrentUser } from "../helpers/auth";
+// import { getCurrentUser } from "../helpers/auth";
 import AnimationRevealPage from "helpers/AnimationRevealPage";
 import BGMHero from "components/hero/BGMHero";
 import Features from "components/features/VerticalWithAlternateImageAndText.js";
@@ -9,7 +9,7 @@ import Leaderboard from "pages/Leaderboard.js";
 import RegistrationSteps from "components/steps/RegistrationSteps";
 
 export default function BGMLandingPage() {
-  const user = getCurrentUser();
+  // const user = getCurrentUser(); // Available for future use
   return (
     <AnimationRevealPage>
       
