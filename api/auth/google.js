@@ -104,7 +104,7 @@ module.exports = async (req, res) => {
 		}
 
 		// Exchange code for tokens
-		return handleGoogleCallback(req, res, code, state);
+		return handleGoogleCallback(req, res, code, state, ref);
 
 	} catch (err) {
 		console.error('Google OAuth error:', err);
@@ -158,7 +158,7 @@ async function initiateGoogleOAuth(req, res) {
 	res.redirect(googleAuthUrl);
 }
 
-async function handleGoogleCallback(req, res, code, state) {
+async function handleGoogleCallback(req, res, code, state, ref) {
 	const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, FRONTEND_URL } = process.env;
 
 	// Initialize global state storage if it doesn't exist
