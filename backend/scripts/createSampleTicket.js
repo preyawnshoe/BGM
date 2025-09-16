@@ -1,8 +1,9 @@
 // This script creates a sample ticket in the database. Run with: node backend/scripts/createSampleTicket.js
+require('dotenv').config({ path: __dirname + '/../.env' });
 const mongoose = require('mongoose');
 const Ticket = require('../models/Ticket');
 
-const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bgm_referrals';
+const mongoUri = process.env.MONGO_URI;
 
 async function main() {
   await mongoose.connect(mongoUri);

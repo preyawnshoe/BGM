@@ -26,6 +26,21 @@ module.exports = async (req, res) => {
 			referredBy: referralCode || null,
 		});
 
+		// Handle referral count increment
+		if (referralCode) {
+			try {
+				const referrer = await User.findOne({ referralCode });
+				if (referrer && referrer._id.toString() !== user._id.toString()) {
+					referrer.referrals = (referrer.referrals || 0) + 1;
+					await referrer.save();
+					console.log(`✅ Referral count incremented for user ${referrer._id} (${referrer.email})`);
+				}
+			} catch (referralError) {
+				console.error('❌ Error processing referral:', referralError);
+				// Don't fail registration if referral processing fails
+			}
+		}
+
 		const token = generateToken(user);
 
 		// Return user without password

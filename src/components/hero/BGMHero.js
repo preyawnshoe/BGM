@@ -65,8 +65,7 @@ export default function BGMHero() {
   const [copied, setCopied] = useState(false);
   const [ticketId, setTicketId] = useState("");
   const [ticketSubmitted, setTicketSubmitted] = useState(false);
-  const [ticketError, setTicketError] = useState("");
-  const [checkingTicket, setCheckingTicket] = useState(true);
+  const [ticketSuccess, setTicketSuccess] = useState("");
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   // Countdown logic
@@ -97,8 +96,9 @@ export default function BGMHero() {
     const refFromUrl = params.get('ref') || "";
     setRefParam(refFromUrl);
 
-    const parsed = getCurrentUser();
-    if (parsed) {
+    const u = localStorage.getItem('user');
+    if (u) {
+      const parsed = JSON.parse(u);
       setUser(parsed);
       // Check if user has a verified ticket
       setCheckingTicket(true);
@@ -143,13 +143,16 @@ export default function BGMHero() {
     e.preventDefault();
     if (!ticketId.trim()) {
       setTicketError("Please enter your Ticket ID.");
+      setTicketSuccess("");
       return;
     }
     if (!user || !user._id) {
       setTicketError("User not found. Please login again.");
+      setTicketSuccess("");
       return;
     }
     setTicketError("");
+    setTicketSuccess("");
     try {
       // If the user was referred, pass the referral code for backend to increment referrer's count
       const referralCode = refParam || undefined;
@@ -163,52 +166,14 @@ export default function BGMHero() {
         setTicketError(data.error || 'Ticket verification failed');
         return;
       }
+      const data = await res.json();
       setTicketSubmitted(true);
+      setTicketSuccess("Ticket verified successfully! Your referral link is now active.");
+      setTicketId(""); // Clear the input
     } catch (err) {
       setTicketError('Network error. Please try again.');
     }
   };
-
-  useEffect(() => {
-    const origin = window.location.origin;
-    const params = new URLSearchParams(window.location.search);
-    const refFromUrl = params.get('ref') || "";
-    setRefParam(refFromUrl);
-
-    const u = localStorage.getItem('user');
-    if (u) {
-      const parsed = JSON.parse(u);
-      setUser(parsed);
-      // Check if user has a verified ticket
-      setCheckingTicket(true);
-      fetch(`/api/ticket/user/${parsed._id}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.hasTicket) {
-            setTicketSubmitted(true);
-          } else {
-            setTicketSubmitted(false);
-          }
-        })
-        .catch(() => setTicketSubmitted(false))
-        .finally(() => setCheckingTicket(false));
-
-      setReferralUrl(`${origin}/signup?ref=${parsed.referralCode}`);
-
-      const displayName = parsed.name || "me";
-      const personalized = `Join ${displayName} at BGM 2026 Hyderabad! Register on Tikkl and use my referral link to sign up:`;
-      const wa = `https://wa.me/?text=${encodeURIComponent(`${personalized} ${origin}/signup?ref=${parsed.referralCode}`)}`;
-      const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(personalized)}&url=${encodeURIComponent(`${origin}/signup?ref=${parsed.referralCode}`)}&hashtags=BGM2026,BITSAA`;
-      setShareLinks({ whatsapp: wa, twitter: tw });
-    } else if (refFromUrl) {
-      setReferralUrl(`${origin}/signup?ref=${refFromUrl}`);
-
-      const personalized = `Join me at BGM 2026 Hyderabad! Register on Tikkl using this referral link:`;
-      const wa = `https://wa.me/?text=${encodeURIComponent(`${personalized} ${origin}/signup?ref=${refFromUrl}`)}`;
-      const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(personalized)}&url=${encodeURIComponent(`${origin}/signup?ref=${refFromUrl}`)}&hashtags=BGM2026,BITSAA`;
-      setShareLinks({ whatsapp: wa, twitter: tw });
-    }
-  }, []);
 
   const onLogout = (e) => {
     e.preventDefault();
@@ -284,6 +249,7 @@ export default function BGMHero() {
                         <CopyButton as="button" type="submit">Join</CopyButton>
                       </RefRow>
                       {ticketError && <Small style={{ color: '#f87171' }}>{ticketError}</Small>}
+                      {ticketSuccess && <Small style={{ color: '#10b981' }}>{ticketSuccess}</Small>}
                     </form>
                   )}
                   {ticketSubmitted && (

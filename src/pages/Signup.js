@@ -72,7 +72,7 @@ export default ({
   const [referrerName, setReferrerName] = useState("");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const googleAuthUrl = "/api/auth/google";
+  const googleAuthUrl = referralCode ? `/api/auth/google?ref=${encodeURIComponent(referralCode)}` : "/api/auth/google";
 
   useEffect(() => {
     const refParam = searchParams.get('ref');

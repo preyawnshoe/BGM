@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
 	try {
 		await connectToDatabase();
 
-		const { code, state, error } = req.query;
+		const { code, state, error, ref } = req.query;
 
 		// Handle OAuth errors
 		if (error) {
@@ -181,6 +181,23 @@ async function handleGoogleCallback(req, res, code, state) {
 				user.authProvider = 'google';
 				user.lastLogin = new Date();
 				user.loginCount += 1;
+
+				// If referral code provided and user doesn't have referredBy set, update it
+				if (ref && !user.referredBy) {
+					user.referredBy = ref;
+					// Increment referrer's count if this is the first time linking
+					try {
+						const referrer = await User.findOne({ referralCode: ref });
+						if (referrer && referrer._id.toString() !== user._id.toString()) {
+							referrer.referrals = (referrer.referrals || 0) + 1;
+							await referrer.save();
+							console.log(`✅ Referral count incremented for user ${referrer._id} (${referrer.email}) via Google OAuth link`);
+						}
+					} catch (referralError) {
+						console.error('❌ Error processing referral in Google OAuth link:', referralError);
+					}
+				}
+
 				await user.save();
 				console.log('✅ Linked Google account to existing user:', user.email);
 			} else {
@@ -194,7 +211,24 @@ async function handleGoogleCallback(req, res, code, state) {
 						authProvider: 'google',
 						lastLogin: new Date(),
 						loginCount: 1,
+						referredBy: ref || null,
 					});
+
+					// Handle referral count increment
+					if (ref) {
+						try {
+							const referrer = await User.findOne({ referralCode: ref });
+							if (referrer && referrer._id.toString() !== user._id.toString()) {
+								referrer.referrals = (referrer.referrals || 0) + 1;
+								await referrer.save();
+								console.log(`✅ Referral count incremented for user ${referrer._id} (${referrer.email}) via Google OAuth`);
+							}
+						} catch (referralError) {
+							console.error('❌ Error processing referral in Google OAuth:', referralError);
+							// Don't fail OAuth if referral processing fails
+						}
+					}
+
 					console.log('✅ Created new Google OAuth user:', user.email);
 				} catch (createError) {
 					console.error('❌ Failed to create Google OAuth user:', createError);
@@ -219,6 +253,23 @@ async function handleGoogleCallback(req, res, code, state) {
 			// Update existing OAuth user's login info
 			user.lastLogin = new Date();
 			user.loginCount += 1;
+
+			// If referral code provided and user doesn't have referredBy set, update it
+			if (ref && !user.referredBy) {
+				user.referredBy = ref;
+				// Increment referrer's count if this is the first time
+				try {
+					const referrer = await User.findOne({ referralCode: ref });
+					if (referrer && referrer._id.toString() !== user._id.toString()) {
+						referrer.referrals = (referrer.referrals || 0) + 1;
+						await referrer.save();
+						console.log(`✅ Referral count incremented for user ${referrer._id} (${referrer.email}) via Google OAuth login`);
+					}
+				} catch (referralError) {
+					console.error('❌ Error processing referral in Google OAuth login:', referralError);
+				}
+			}
+
 			await user.save();
 			console.log('✅ Updated existing Google OAuth user login:', user.email);
 		}
