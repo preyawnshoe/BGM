@@ -111,33 +111,6 @@ module.exports = async (req, res) => {
 		return res.status(500).json({ error: 'Internal server error' });
 	}
 };
-	if (req.method !== 'GET') {
-		return res.status(405).json({ error: 'Method not allowed' });
-	}
-
-	try {
-		await connectToDatabase();
-
-		const { code, state, error, ref } = req.query;
-
-		// Handle OAuth errors
-		if (error) {
-			return res.status(400).json({ error: `OAuth error: ${error}` });
-		}
-
-		// If no code, redirect to Google OAuth
-		if (!code) {
-			return initiateGoogleOAuth(req, res);
-		}
-
-		// Exchange code for tokens
-		return handleGoogleCallback(req, res, code, state);
-
-	} catch (err) {
-		console.error('Google OAuth error:', err);
-		return res.status(500).json({ error: 'Internal server error' });
-	}
-};
 
 async function initiateGoogleOAuth(req, res) {
 	const { GOOGLE_CLIENT_ID, FRONTEND_URL } = process.env;
