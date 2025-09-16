@@ -47,7 +47,7 @@ export default function Dashboard() {
 
   const refreshStats = async () => {
     // Simple refresh: re-login to get updated counts
-    const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email }) });
+    const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email }) });
     if (res.ok) {
       const data = await res.json();
       localStorage.setItem('user', JSON.stringify(data.user));

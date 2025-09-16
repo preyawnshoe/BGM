@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import GlobalStyles from 'styles/GlobalStyles';
 import { css } from "styled-components/macro"; //eslint-disable-line
+import { Analytics } from '@vercel/analytics/react';
 
 /*
  * This is the entry point component of this project. You can change the below exported default App component to any of
@@ -138,6 +139,7 @@ export default function App() {
   return (
     <>
       <GlobalStyles />
+      <Analytics />
       <Router>
         <Routes>
           <Route path="/components/:type/:subtype/:name" element={<ComponentRenderer />} />
