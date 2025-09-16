@@ -134,6 +134,8 @@ async function initiateGoogleOAuth(req, res) {
 	}
 
 	const redirectUri = `${baseUrl}/api/auth/google`;
+	console.log('🔧 Base URL:', baseUrl);
+	console.log('🔧 Redirect URI:', redirectUri);
 
 	// Google OAuth parameters
 	const params = new URLSearchParams({
@@ -368,8 +370,11 @@ async function handleGoogleCallback(req, res, code, state, ref) {
 			frontendUrl = `${protocol}://${host}`;
 		}
 
-		console.log('🔄 Redirecting to frontend:', `${frontendUrl}?token=${token}&oauth=google`);
-		res.redirect(`${frontendUrl}?token=${token}&oauth=google`);
+		const redirectUrl = `${frontendUrl}?token=${token}&oauth=google`;
+		console.log('🔄 Redirecting to frontend:', redirectUrl);
+		console.log('🔄 Frontend URL:', frontendUrl);
+		console.log('🔄 Token length:', token.length);
+		res.redirect(redirectUrl);
 
 	} catch (err) {
 		console.error('Google OAuth callback error:', err);

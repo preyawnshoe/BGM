@@ -100,62 +100,66 @@ export default function BGMHero() {
     const oauthFromUrl = params.get('oauth');
     setRefParam(refFromUrl);
 
+    console.log('🔍 Checking URL params:', { 
+      tokenFromUrl: tokenFromUrl ? 'present' : 'missing', 
+      oauthFromUrl,
+      fullUrl: window.location.href 
+    });
+
     // Handle OAuth callback
     if (tokenFromUrl && oauthFromUrl === 'google') {
-      console.log('Processing OAuth callback...');
-      // Store the token and fetch user data
+      console.log('🔄 Processing OAuth callback...');
+      
+      // Store the token
       localStorage.setItem('jwt', tokenFromUrl);
 
-      // Fetch user data using the token
-      fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${tokenFromUrl}`
-        }
-      })
-      .then(res => res.json())
-      .then(userData => {
-        if (userData.user) {
-          localStorage.setItem('user', JSON.stringify(userData.user));
-          setUser(userData.user);
-          console.log('OAuth user data stored:', userData.user);
+      // Create user object from token payload
+      try {
+        const payload = JSON.parse(atob(tokenFromUrl.split('.')[1]));
+        const userData = {
+          _id: payload.sub,
+          name: payload.name,
+          email: payload.email,
+          referralCode: payload.referralCode,
+          isAdmin: payload.isAdmin,
+          authProvider: 'google'
+        };
+        
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+        console.log('✅ OAuth user data stored:', userData);
 
-          // Check if user has a verified ticket
-          setCheckingTicket(true);
-          fetch(`/api/ticket/user/${userData.user._id}`)
-            .then(res => {
-              console.log('API Response status:', res.status);
-              return res.json();
-            })
-            .then(data => {
-              console.log('API Response data:', data);
-              if (data.hasTicket) {
-                setTicketSubmitted(true);
-              } else {
-                setTicketSubmitted(false);
-              }
-            })
-            .catch(err => {
-              console.error('Error checking ticket:', err);
+        // Check if user has a verified ticket
+        setCheckingTicket(true);
+        fetch(`/api/ticket/user/${userData._id}`)
+          .then(res => res.json())
+          .then(data => {
+            console.log('🔄 Ticket check data:', data);
+            if (data.hasTicket) {
+              setTicketSubmitted(true);
+            } else {
               setTicketSubmitted(false);
-            })
-            .finally(() => setCheckingTicket(false));
+            }
+          })
+          .catch(err => {
+            console.error('❌ Error checking ticket:', err);
+            setTicketSubmitted(false);
+          })
+          .finally(() => setCheckingTicket(false));
 
-          setReferralUrl(`${origin}/signup?ref=${userData.user.referralCode}`);
+        setReferralUrl(`${origin}/signup?ref=${userData.referralCode}`);
 
-          const displayName = userData.user.name || "me";
-          const personalized = `Join ${displayName} at BGM 2026 Hyderabad! Register on Tikkl and use my referral link to sign up:`;
-          const wa = `https://wa.me/?text=${encodeURIComponent(`${personalized} ${origin}/signup?ref=${userData.user.referralCode}`)}`;
-          const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(personalized)}&url=${encodeURIComponent(`${origin}/signup?ref=${userData.user.referralCode}`)}&hashtags=BGM2026,BITSAA`;
-          setShareLinks({ whatsapp: wa, twitter: tw });
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching OAuth user data:', err);
-      })
-      .finally(() => {
+        const displayName = userData.name || "me";
+        const personalized = `Join ${displayName} at BGM 2026 Hyderabad! Register on Tikkl and use my referral link to sign up:`;
+        const wa = `https://wa.me/?text=${encodeURIComponent(`${personalized} ${origin}/signup?ref=${userData.referralCode}`)}`;
+        const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(personalized)}&url=${encodeURIComponent(`${origin}/signup?ref=${userData.referralCode}`)}&hashtags=BGM2026,BITSAA`;
+        setShareLinks({ whatsapp: wa, twitter: tw });
+
         // Clean up URL parameters
         window.history.replaceState({}, document.title, window.location.pathname);
-      });
+      } catch (err) {
+        console.error('❌ Error processing OAuth token:', err);
+      }
 
       return; // Exit early, don't process normal user check
     }
