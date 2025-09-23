@@ -82,7 +82,7 @@ app.get('/api/ref/:code', async (req, res) => {
 });
 
 // This endpoint should be called by our front-end after Tikkl registration success.
-// In real-world, use a webhook or return URL from Tikkl. Here we simulate by expecting the token back.
+// Here we simulate by expecting the token back.
 app.post('/api/ref/success', async (req, res) => {
   const { token } = req.body || {};
   if (!token) return res.status(400).json({ error: 'token required' });

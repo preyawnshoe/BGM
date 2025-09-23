@@ -22,7 +22,16 @@ async function main() {
   for (const ticketId of ticketIds) {
     const ticket = await Ticket.findOneAndUpdate(
       { ticketId },
-      { ticketId },
+      { 
+        ticketId,
+        subject: `Sample Ticket ${ticketId}`,
+        description: `This is a sample ticket for testing purposes`,
+        status: 'open',
+        priority: 'normal',
+        type: 'support',
+        tags: ['sample', 'test'],
+        source: 'manual'
+      },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
     console.log('Sample ticket created:', ticket.ticketId);
